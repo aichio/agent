@@ -1,0 +1,14 @@
+{
+  "/usr/lib/systemd/systemd-journald": {
+    "hashmd5": "27"
+  },
+  "/usr/lib/systemd/systemd": {
+    "hashmd5": "222"
+  },
+  "/usr/sbin/irqbalance":{
+    "hashmd5": "222"
+  },
+  "/usr/sbin/rsyslogd": {
+    "hashmd5": "222"
+  }
+}

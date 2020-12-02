@@ -1,0 +1,14 @@
+{
+  "/usr/lib/systemd/systemd-journald": {
+    "hashmd5": "27"
+  },
+  "/usr/lib/systemd/systemd": {
+    "hashmd5": "222"
+  },
+  "/usr/lib/systemd/systemd-cgroups-agent": {
+    "hashmd5": "222"
+  },
+  "/usr/lib/golang/pkg/tool/linux_amd64/link":{
+    "hashmd5": "222"
+  }
+}
