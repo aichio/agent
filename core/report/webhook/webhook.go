@@ -2,6 +2,8 @@ package report
 
 import (
 	"agent/api"
+	"agent/base/lib"
+	"agent/core/engine/libakya/libakya"
 	"agent/utils/log"
 	"bytes"
 	"encoding/json"
@@ -32,21 +34,16 @@ func loginit(fileName string) {
 }
 
 func Log(info interface{}){
-	if *enable {
-		switch info.(type) {
-		case *api.MonitorInfo :
-			Info := info.(*api.MonitorInfo)
-			WebHook(*serverIp,*serverPort,Info)
-			return
-		default:
-			log.Debug("无法识别的类型")
-		}
-	}else{
+
+	switch info.(type) {
+	case *api.MonitorInfo :
+		Info := info.(*api.MonitorInfo)
+
 		if info.(*api.MonitorInfo).Ppid == 0{
 			return
 		}
 		event := info.(*api.MonitorInfo)
-		log.Info("Ptype=%s Ns=%d Pid=%d Ppid=%d Uid=%d File=%s Path=%s Args=%s DockerInfo=%v", event.Ptype.String(),
+		log.Info("Ptype=%s Ns=%d Pid=%d Ppid=%d Uid=%d File=%s Path=%s Args=%s fileHash=%s DockerInfo=%v", event.Ptype.String(),
 			event.Ns ,
 			event.Pid ,
 			event.Ppid ,
@@ -54,9 +51,29 @@ func Log(info interface{}){
 			event.File,
 			event.Path,
 			event.Args,
+			event.FileHash,
 			event.DockerInfo)
+		if *enable {
+			WebHook(*serverIp,*serverPort,Info)
+		}
+		return
+	case libakya.AkyaNetEvent:
+		event := info.(libakya.AkyaNetEvent)
+		log.Info("Ptype=%s Ns=%d Pid=%d Ppid=%d Uid=%d File=%s Saddr=%v Sport=%d Daddr=%v Dport=%d Protocol=%v Hash=%v",event.T.String(),
+			event.Ns ,
+			event.Pid ,
+			event.Ppid ,
+			event.Uid,
+			event.Tpath,
+			event.R1.Saddr.BigEndianPut().String(),
+			lib.BigEndianPut(event.R1.Sport),
+			event.R1.Daddr.BigEndianPut().String(),
+			lib.BigEndianPut(event.R1.Dport),
+			event.R1.Protocol.String(),
+			event.R1.Hash)
+	default:
+		log.Debug("无法识别的类型")
 	}
-
 }
 
 func WebHook(destip string, destport string, ReportContent interface{}) {

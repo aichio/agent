@@ -7,9 +7,11 @@ import "C"
 import (
 	"agent/api"
 	"agent/core/engine/docker"
+	libakya2 "agent/core/engine/libakya"
+	"agent/core/engine/libakya/libakya"
 	"agent/core/engine/rule"
-	"agent/core/libakya"
 	report "agent/core/report/webhook"
+	"agent/utils/log"
 	"bytes"
 	"fmt"
 )
@@ -18,7 +20,7 @@ type FileMonitor struct {
 	MmapFile    string
 	DockerKnow  *docker.DockerKnow
 	RuleEngines *rule.FileWhiteRuleEngine
-	EventEngine *AkyaEventEngine
+	EventEngine *libakya2.AkyaEventEngine
 }
 
 func (self *FileMonitor) SetMmapFile(fileName string) {
@@ -39,20 +41,25 @@ func (self *FileMonitor) SetRuleEngine(RuleEngine interface{}) {
 
 func (self *FileMonitor) OpenMonitor()(error) {
 	var err error
-	self.EventEngine,err = NewAkyaEventEngine(self.MmapFile)
+
+	self.EventEngine = libakya2.NewAkyaEventEngine(new(libakya2.FileEventEngine))
+	self.EventEngine.NewEventEngine(self.MmapFile)
 	if err != nil{
+		log.Fatal(-1,"open %s,err:%s",self.MmapFile,err.Error())
 		return err
 	}
 	return nil
 }
 
 func (self *FileMonitor) EventRead()(error) {
-	go self.EventEngine.Akyahandle(self.analyze)
-	self.EventEngine.AkyaRun()
+	fmt.Println("ProcessMonitor->EventRead")
+	go self.EventEngine.EventHandle(self.analyze)
+	self.EventEngine.EventRead()
 	return nil
 }
 
-func (self *FileMonitor)analyze(eventlog libakya.AkyaSecurityLogt) (err error) {
+func (self *FileMonitor)analyze(event interface{}) (err error) {
+	eventlog := event.(libakya.AkyaFileEvent)
 	// marshal process info
 	info := &api.MonitorInfo{
 		Ptype: eventlog.T,

@@ -5,12 +5,11 @@ import "fmt"
 type EventType uint32
 
 var (
-	ProcessFork EventType= 1002
+
 	ProcessExec EventType= 1001
+	ProcessFork EventType= 1002
 	ProcessExit EventType= 1003
 
-	FileCreate  EventType= 201
-	FileRemove  EventType= 203
 	FileOpen    EventType= 2001
 	FileRead	EventType= 2002
 	FileWrite   EventType= 2003
@@ -19,30 +18,40 @@ var (
 	FileChmod	EventType= 2006
 	FileLink	EventType= 2007
 	FileRename  EventType= 206
+
+	NetSend EventType= 3001
+	NetConn	EventType=3002
+	NetAccept EventType=3003
 )
 
 func (etype EventType)String() string {
 	switch etype {
-	case 1001:
+	case ProcessExec:
 		return "命令执行"
-	case 1002:
+	case ProcessFork:
 		return "进程创建"
-	case 1003:
+	case ProcessExit:
 		return "进程退出"
-	case 2001:
+	case FileOpen:
 		return "文件打开"
-	case 2002:
+	case FileRead:
 		return "文件读取"
-	case 2003:
+	case FileWrite:
 		return "文件写入"
-	case 2004:
+	case FileUnlink:
 		return "FileUnlink"
-	case 2005:
+	case FileClose:
 		return "文件关闭"
-	case 2006:
+	case FileChmod:
 		return "文件权限变更"
-	case 2007:
+	case FileLink:
 		return "FileLink"
+	case NetSend:
+		return "数据发送"
+	case NetConn:
+		return "网络外联"
+	case NetAccept:
+		return "收到连接"
 	}
 	fmt.Println(etype)
 	return "unknow"
@@ -61,7 +70,21 @@ type MonitorInfo struct {
 	Path       string  `json:"path"`
 	File		string	`json:"file"`
 	Args       string  `json:"args"`
-	
+	FileHash	string	`json:"filehash"`
+	DockerInfo DockerInfo `json:"docker_info"`
+}
+
+
+type NetMonitorInfo struct {
+	Ptype      EventType      `json:"ptype"`
+	Pid        uint32      `json:"pid"`
+	Ppid       uint32      `json:"ppid"`
+	Uid        uint32      `json:"uid"`
+	Ns         uint32     `json:"namespace"`
+	Path       string  `json:"path"`
+	File		string	`json:"file"`
+	Args       string  `json:"args"`
+	FileHash	string	`json:"filehash"`
 	DockerInfo DockerInfo `json:"docker_info"`
 }
 

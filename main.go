@@ -8,6 +8,7 @@ import (
 	"agent/core/engine/monitor"
 	"agent/core/engine/rule"
 	"flag"
+	"fmt"
 )
 
 var(
@@ -37,13 +38,20 @@ func main() {
 	dockerKnow := docker.DockerKnowNew()
 	go dockerKnow.RunDockerKnow()
 
-	if akyaConfig.Get("processEvent","enable") == "true" {
-		processEventToEnable(dockerKnow)
+	if akyaConfig.Get("processMonitor","enable") == "true" {
+		fmt.Println("processMonitor enable")
+		go processEventToEnable(dockerKnow)
 	}
 
-	if akyaConfig.Get("fileEvent","enable") == "true" {
-		fileEventToEnable(dockerKnow)
+	if akyaConfig.Get("fileMonitor","enable") == "true" {
+		fmt.Println("fileMonitor enable")
+		go fileEventToEnable(dockerKnow)
 	}
+	if akyaConfig.Get("netMonitor","enable") == "true" {
+		fmt.Println("netMonitor enable")
+		go netMonitorToEnable()
+	}
+
 	select {}
 }
 
@@ -51,7 +59,7 @@ func processEventToEnable(dockerKnow *docker.DockerKnow){
 	RuleEngines := rule.CreatProcessWlRuleEngine()
 	RuleEngines.Loadjson(processWhiteConfigFile)
 	ProcessMonitorEngine:=  monitor.NewMonitorEngine(new(monitor.ProcessMonitor))
-	ProcessMonitorEngine.SetMmapFile(akyaConfig.Get("processEvent","ringfile"))
+	ProcessMonitorEngine.SetMmapFile(akyaConfig.Get("processMonitor","interfaceFile"))
 	ProcessMonitorEngine.SetDockerKnow(dockerKnow)
 	ProcessMonitorEngine.SetRuleEngine(RuleEngines)
 	ProcessMonitorEngine.MonitorOpen()
@@ -62,10 +70,16 @@ func fileEventToEnable(dockerKnow *docker.DockerKnow){
 	RuleEngines := rule.CreatFileWlRuleEngine()
 	RuleEngines.Loadjson(fileWhiteConfigFile)
 	fileMonitorEngine:=  monitor.NewMonitorEngine(new(monitor.FileMonitor))
-	fileMonitorEngine.SetMmapFile(akyaConfig.Get("fileEvent","ringfile"))
+	fileMonitorEngine.SetMmapFile(akyaConfig.Get("fileMonitor","interfaceFile"))
 	fileMonitorEngine.SetDockerKnow(dockerKnow)
 	fileMonitorEngine.SetRuleEngine(RuleEngines)
 	fileMonitorEngine.MonitorOpen()
 	fileMonitorEngine.MonitorEventRead()
 }
 
+func netMonitorToEnable(){
+	MonitorEngine:=  monitor.NewMonitorEngine(new(monitor.NetMonitor))
+	MonitorEngine.SetMmapFile(akyaConfig.Get("netMonitor","interfaceFile"))
+	MonitorEngine.MonitorOpen()
+	MonitorEngine.MonitorEventRead()
+}

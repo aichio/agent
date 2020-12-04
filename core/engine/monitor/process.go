@@ -3,10 +3,13 @@ package monitor
 import "C"
 import (
 	"agent/api"
+	"agent/base/lib"
 	"agent/core/engine/docker"
+	libakya2 "agent/core/engine/libakya"
+	"agent/core/engine/libakya/libakya"
 	"agent/core/engine/rule"
-	"agent/core/libakya"
 	report "agent/core/report/webhook"
+	"agent/utils/log"
 	"bytes"
 	"fmt"
 )
@@ -15,7 +18,7 @@ type ProcessMonitor struct {
 	MmapFile    string
 	DockerKnow  *docker.DockerKnow
 	RuleEngines *rule.ProcessWhiteRuleEngine
-	EventEngine *AkyaEventEngine
+	EventEngine *libakya2.AkyaEventEngine
 }
 
 
@@ -36,30 +39,38 @@ func (self *ProcessMonitor) SetRuleEngine(RuleEngine interface{}) {
 
 func (self *ProcessMonitor) OpenMonitor()(error) {
 	var err error
-	self.EventEngine,err = NewAkyaEventEngine(self.MmapFile)
+
+	self.EventEngine = libakya2.NewAkyaEventEngine(new(libakya2.ProcessEventEngine))
+	self.EventEngine.NewEventEngine(self.MmapFile)
 	if err != nil{
+		log.Fatal(-1,"open %s,err:%s",self.MmapFile,err.Error())
 		return err
 	}
 	return nil
 }
 
 func (self *ProcessMonitor) EventRead()(error) {
-	go self.EventEngine.Akyahandle(self.analyze)
-	self.EventEngine.AkyaRun()
+	fmt.Println("ProcessMonitor->EventRead")
+	go self.EventEngine.EventHandle(self.analyze)
+	self.EventEngine.EventRead()
 	return nil
 }
 
-func (self *ProcessMonitor)analyze(eventlog libakya.AkyaSecurityLogt) (err error) {
+func (self *ProcessMonitor)analyze(event interface{}) (err error) {
+	eventlog := event.(libakya.AkyaProcessEvent)
 	// marshal process info
+	file :=string(bytes.Trim(eventlog.R1[:], "\x00"))
+	filehash,err := lib.GetFileMD5(file)
 	info := &api.MonitorInfo{
 		Ptype: eventlog.T,
 		Pid:   eventlog.Pid,
 		Ppid:  eventlog.Ppid,
 		Uid:   eventlog.Uid,
 		Ns:    eventlog.Ns,
-		File:  fmt.Sprintf("%s",string(bytes.Trim(eventlog.R1[:], "\x00"))),
-		Args:  fmt.Sprintf("%s",string(bytes.Trim(eventlog.R2[:], "\x00"))),
-		Path:  fmt.Sprintf("%s",string(bytes.Trim(eventlog.Tpath[:], "\x00"))),
+		File:  string(bytes.Trim(eventlog.R1[:], "\x00")),
+		Args:  string(bytes.Trim(eventlog.R2[:], "\x00")),
+		Path:  string(bytes.Trim(eventlog.Tpath[:], "\x00")),
+		FileHash: filehash,
 	}
 	if _,ok := self.RuleEngines.RuleEngine[info.Path];ok {
 		return

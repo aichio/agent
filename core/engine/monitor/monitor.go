@@ -2,7 +2,7 @@ package monitor
 
 import "agent/core/engine/docker"
 
-type EvevtEngine interface {
+type MonitorEngineIf interface {
 	EventRead()(error)
 	OpenMonitor()(error)
 	SetMmapFile(string)
@@ -11,7 +11,7 @@ type EvevtEngine interface {
 }
 
 type MonitorEngine struct {
-	evevtEngine EvevtEngine
+	evevtEngine MonitorEngineIf
 }
 
 func (c *MonitorEngine) SetMmapFile(file string) {
@@ -36,6 +36,6 @@ func (c *MonitorEngine) MonitorEventRead() error {
 
 
 
-func NewMonitorEngine(s EvevtEngine) *MonitorEngine {
+func NewMonitorEngine(s MonitorEngineIf) *MonitorEngine {
 	return &MonitorEngine{evevtEngine: s}
 }
