@@ -40,17 +40,17 @@ func GetFileMD5(path string) (string, error) {
 	return hex.EncodeToString(cipherStr), nil
 }
 
-func BigEndianPut(v uint32) uint32 {
+func BigEndianPut(v uint32) uint16 {
 	var testBytes []byte = make([]byte, 4)
-	binary.BigEndian.PutUint32(testBytes, uint32(v))
-	convInt := binary.LittleEndian.Uint32(testBytes)
+	binary.LittleEndian.PutUint32(testBytes, uint32(v))
+	convInt := binary.BigEndian.Uint16(testBytes)
 	return convInt
 }
 
 func LittleEndianPut(v uint32) uint32 {
 	var testBytes []byte = make([]byte, 4)
-	binary.LittleEndian.PutUint32(testBytes, uint32(v))
-	convInt := binary.BigEndian.Uint32(testBytes)
+	binary.BigEndian.PutUint32(testBytes, uint32(v))
+	convInt := binary.LittleEndian.Uint32(testBytes)
 	return convInt
 }
 

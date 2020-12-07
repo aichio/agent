@@ -10,5 +10,8 @@
   },
   "/usr/sbin/rsyslogd": {
     "hashmd5": "222"
-  }
+  },
+  "/var/log/akya.log":{
+    "hashmd5":"2222"   
+ }
 }

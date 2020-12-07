@@ -5,6 +5,7 @@ package libakya
 import "C"
 import (
 	"agent/core/engine/libakya/libakya"
+	"agent/utils/log"
 	"fmt"
 	"os"
 	"syscall"
@@ -64,7 +65,6 @@ func (self *NetEventEngine)akyaEventRead()(error){
 				break;
 			}
 			log := *((* libakya.AkyaNetEvent)(unsafe.Pointer(&bt[0])))
-			fmt.Println(log)
 			self.eventCh <- log
 		}
 	}
@@ -82,10 +82,10 @@ func (self *NetEventEngine)akyaEventHandle(f func(event interface{}) error){
 			if ok {
 				err := f(x)
 				if err!=nil {
-					fmt.Println(err)
+					log.Error(-1,"err:%v",err.Error())
 				}
 			}else{
-				fmt.Println("net eventCh close")
+				log.Debug("akyaEventHandle: net eventCh close")
 			}
 		}
 	}

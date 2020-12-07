@@ -5,6 +5,7 @@ package libakya
 import "C"
 import (
 	"agent/core/engine/libakya/libakya"
+	"agent/utils/log"
 	"fmt"
 	"os"
 	"syscall"
@@ -81,10 +82,10 @@ func (self *ProcessEventEngine)akyaEventHandle(f func(event interface{}) error){
 			if ok {
 				err := f(x)
 				if err!=nil {
-					fmt.Println(err)
+					log.Error(-1,"err:%v",err.Error())
 				}
-			}else {
-				fmt.Println("process eventCh close")
+			}else{
+				log.Debug("akyaEventHandle: net eventCh close")
 			}
 		}
 	}
