@@ -2,8 +2,6 @@ package report
 
 import (
 	"agent/api"
-	"agent/base/lib"
-	"agent/core/engine/libakya/libakya"
 	"agent/utils/log"
 	"bytes"
 	"encoding/json"
@@ -43,34 +41,15 @@ func Log(info interface{}){
 			return
 		}
 		event := info.(*api.MonitorInfo)
-		log.Info("Ptype=%s Ns=%d Pid=%d Ppid=%d Uid=%d File=%s Path=%s Args=%s fileHash=%s DockerInfo=%v", event.Ptype.String(),
-			event.Ns ,
-			event.Pid ,
-			event.Ppid ,
-			event.Uid,
-			event.File,
-			event.Path,
-			event.Args,
-			event.FileHash,
-			event.DockerInfo)
+		event.Log()
+
 		if *enable {
 			WebHook(*serverIp,*serverPort,Info)
 		}
 		return
-	case libakya.AkyaNetEvent:
-		event := info.(libakya.AkyaNetEvent)
-		log.Info("Ptype=%s Ns=%d Pid=%d Ppid=%d Uid=%d File=%s Saddr=%v Sport=%d Daddr=%v Dport=%d Protocol=%v Hash=%v",event.T.String(),
-			event.Ns ,
-			event.Pid ,
-			event.Ppid ,
-			event.Uid,
-			event.Tpath,
-			event.R1.Saddr.BigEndianPut().String(),
-			lib.BigEndianPut(event.R1.Sport),
-			event.R1.Daddr.BigEndianPut().String(),
-			lib.BigEndianPut(event.R1.Dport),
-			event.R1.Protocol.String(),
-			event.R1.Hash)
+	case *api.NetMonitorInfo:
+		event := info.(*api.NetMonitorInfo)
+		event.Log()
 	default:
 		log.Debug("无法识别的类型")
 	}

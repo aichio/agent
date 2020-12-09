@@ -10,6 +10,7 @@ import (
 func TryE() {
 	errs := recover()
 	if errs == nil {
+		fmt.Println("recover is nil")
 		return
 	}
 	exeName := os.Args[0] //获取程序名称

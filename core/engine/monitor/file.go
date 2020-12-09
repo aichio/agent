@@ -8,7 +8,6 @@ import (
 	"agent/api"
 	"agent/core/engine/docker"
 	libakya2 "agent/core/engine/libakya"
-	"agent/core/engine/libakya/libakya"
 	"agent/core/engine/rule"
 	report "agent/core/report/webhook"
 	"agent/utils/log"
@@ -59,7 +58,7 @@ func (self *FileMonitor) EventRead()(error) {
 }
 
 func (self *FileMonitor)analyze(event interface{}) (err error) {
-	eventlog := event.(libakya.AkyaFileEvent)
+	eventlog := event.(api.AkyaFileEvent)
 	// marshal process info
 	info := &api.MonitorInfo{
 		Ptype: eventlog.T,
@@ -67,9 +66,9 @@ func (self *FileMonitor)analyze(event interface{}) (err error) {
 		Ppid:  eventlog.Ppid,
 		Uid:   eventlog.Uid,
 		Ns:    eventlog.Ns,
-		File:  fmt.Sprintf("%s",string(bytes.Trim(eventlog.R1[:], "\x00"))),
-		Args:  fmt.Sprintf("%s",string(bytes.Trim(eventlog.R2[:], "\x00"))),
-		Path:  fmt.Sprintf("%s",string(bytes.Trim(eventlog.Tpath[:], "\x00"))),
+		File: 	string(bytes.Trim(eventlog.R1[:], "\x00")),
+		Args:  string(bytes.Trim(eventlog.R2[:], "\x00")),
+		Path:  string(bytes.Trim(eventlog.Tpath[:], "\x00")),
 	}
 	if _,ok := self.RuleEngines.RuleEngine[info.Path];ok {
 		return

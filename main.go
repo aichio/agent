@@ -4,6 +4,7 @@ package main
 
 import (
 	"agent/base/config"
+	"agent/base/lib"
 	"agent/core/engine/docker"
 	"agent/core/engine/monitor"
 	"agent/core/engine/rule"
@@ -31,7 +32,7 @@ var akyaConfig *config.AkyaConfig
 func main() {
 	flag.Parse()
 	//加载容器信息
-
+	defer lib.TryE()
 
 	akyaConfig = config.Init(akyaConfigFile)
 
@@ -49,13 +50,14 @@ func main() {
 	}
 	if akyaConfig.Get("netMonitor","enable") == "true" {
 		fmt.Println("netMonitor enable")
-		go netMonitorToEnable()
+		go netMonitorToEnable(dockerKnow)
 	}
 
 	select {}
 }
 
 func processEventToEnable(dockerKnow *docker.DockerKnow){
+	defer lib.TryE()
 	RuleEngines := rule.CreatProcessWlRuleEngine()
 	RuleEngines.Loadjson(processWhiteConfigFile)
 	ProcessMonitorEngine:=  monitor.NewMonitorEngine(new(monitor.ProcessMonitor))
@@ -67,6 +69,7 @@ func processEventToEnable(dockerKnow *docker.DockerKnow){
 }
 
 func fileEventToEnable(dockerKnow *docker.DockerKnow){
+	defer lib.TryE()
 	RuleEngines := rule.CreatFileWlRuleEngine()
 	RuleEngines.Loadjson(fileWhiteConfigFile)
 	fileMonitorEngine:=  monitor.NewMonitorEngine(new(monitor.FileMonitor))
@@ -77,9 +80,11 @@ func fileEventToEnable(dockerKnow *docker.DockerKnow){
 	fileMonitorEngine.MonitorEventRead()
 }
 
-func netMonitorToEnable(){
+func netMonitorToEnable(dockerKnow *docker.DockerKnow){
+	defer lib.TryE()
 	MonitorEngine:=  monitor.NewMonitorEngine(new(monitor.NetMonitor))
 	MonitorEngine.SetMmapFile(akyaConfig.Get("netMonitor","interfaceFile"))
+	MonitorEngine.SetDockerKnow(dockerKnow)
 	MonitorEngine.MonitorOpen()
 	MonitorEngine.MonitorEventRead()
 }

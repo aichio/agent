@@ -4,6 +4,7 @@ package libakya
 */
 import "C"
 import (
+	"agent/api"
 	"agent/core/engine/libakya/libakya"
 	"agent/utils/log"
 	"fmt"
@@ -15,7 +16,7 @@ import (
 type NetEventEngine struct {
 	interfaceFile	string
 	interfaceFileFd *os.File
-	eventCh 		chan libakya.AkyaNetEvent
+	eventCh 		chan api.AkyaNetEvent
 }
 
 func (self *NetEventEngine)SetInterfaceFile(file string) {
@@ -27,7 +28,7 @@ func (self *NetEventEngine)SetInterfaceFileFd(InterfaceFileFd *os.File) {
 }
 
 func (self *NetEventEngine)NewEventCh() {
-	self.eventCh = make(chan libakya.AkyaNetEvent,1024)
+	self.eventCh = make(chan api.AkyaNetEvent,1024)
 }
 
 func (self *NetEventEngine)akyaEventRead()(error){
@@ -64,7 +65,7 @@ func (self *NetEventEngine)akyaEventRead()(error){
 			if rv != C.int(size){
 				break;
 			}
-			log := *((* libakya.AkyaNetEvent)(unsafe.Pointer(&bt[0])))
+			log := *((* api.AkyaNetEvent)(unsafe.Pointer(&bt[0])))
 			self.eventCh <- log
 		}
 	}

@@ -4,6 +4,7 @@ package libakya
 //
 
 import (
+	"agent/base/lib"
 	"errors"
 	"fmt"
 	"os"
@@ -50,6 +51,7 @@ func (self *AkyaEventEngine)NewEventEngine(file string) (error) {
 }
 
 func (self *AkyaEventEngine)EventHandle(f func(event interface{}) error){
+	defer lib.TryE()
 	self.akyaEvevtEngine.akyaEventHandle(f)
 }
 

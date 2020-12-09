@@ -13,15 +13,15 @@ type DockerKnow struct {
 func DockerKnowNew() *DockerKnow {
 	return &DockerKnow{
 		Dict:      make(map[string]api.DockerInfo),
-		DictMutex: new(sync.RWMutex),
+		DictMutex: &sync.RWMutex{},
 	}
 }
 
 func (self *DockerKnow) Set(key string, value interface{}) {
 	self.DictMutex.Lock()
+	defer self.DictMutex.Unlock()
 	//fmt.Println(key)
 	self.Dict[key] = value.(api.DockerInfo)
-	self.DictMutex.Unlock()
 }
 func (self *DockerKnow) Get(key string) (interface{}, bool) {
 	self.DictMutex.RLock()

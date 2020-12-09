@@ -1,11 +1,13 @@
 package monitor
 
 import (
+	"agent/api"
 	"agent/core/engine/docker"
 	libakya2 "agent/core/engine/libakya"
 	"agent/core/engine/rule"
 	report "agent/core/report/webhook"
 	"agent/utils/log"
+	"fmt"
 )
 
 type NetMonitor struct {
@@ -51,12 +53,21 @@ func (self *NetMonitor) EventRead()(error) {
 
 func (self *NetMonitor)analyze(event interface{}) (err error) {
 	// marshal process info
-
-	self.ResultsHandle(event)
+	eventlog := event.(api.AkyaNetEvent)
+	// marshal process info
+	info := &api.NetMonitorInfo{
+		NetEvent: eventlog,
+	}
+	self.ResultsHandle(info)
 	return nil
 }
 
 func (self *NetMonitor) ResultsHandle(value interface{}) {
-	report.Log(value)
+	netMonitor := value.(*api.NetMonitorInfo)
+	if netMonitor != nil {
+		dockerinfo, _ := self.DockerKnow.Get(fmt.Sprintf("%d", netMonitor.NetEvent.Ns))
+		netMonitor.DockerInfo = dockerinfo.(api.DockerInfo)
+		report.Log(netMonitor)
+	}
 }
 

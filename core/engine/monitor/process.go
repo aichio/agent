@@ -6,7 +6,6 @@ import (
 	"agent/base/lib"
 	"agent/core/engine/docker"
 	libakya2 "agent/core/engine/libakya"
-	"agent/core/engine/libakya/libakya"
 	"agent/core/engine/rule"
 	report "agent/core/report/webhook"
 	"agent/utils/log"
@@ -57,7 +56,7 @@ func (self *ProcessMonitor) EventRead()(error) {
 }
 
 func (self *ProcessMonitor)analyze(event interface{}) (err error) {
-	eventlog := event.(libakya.AkyaProcessEvent)
+	eventlog := event.(api.AkyaProcessEvent)
 	// marshal process info
 	file :=string(bytes.Trim(eventlog.R1[:], "\x00"))
 	filehash,err := lib.GetFileMD5(file)
